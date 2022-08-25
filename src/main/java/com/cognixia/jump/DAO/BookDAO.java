@@ -316,4 +316,62 @@ public class BookDAO implements DAO<Book> {
 		return books;
 	}
 	
+	public Book calculateUserRating(Book book, double rating) {
+		
+		int ratingCount = book.getRatingCount();
+		
+		int newRatingCount = ratingCount + 1;
+		
+		if (ratingCount == 0) {
+			book.setUserRating(rating/newRatingCount);
+			
+			book.setRatingCount(newRatingCount);
+		} else {
+		
+			double currentUserRating = book.getUserRating() * ratingCount;
+			book.setUserRating((currentUserRating + rating)/newRatingCount);
+			
+			book.setRatingCount(newRatingCount);
+		}
+		System.out.println(book);
+		return book;
+	}
+	
+	public boolean updateUserRating(Book book, double rating) {
+		
+		book = calculateUserRating(book, rating);
+		
+		PreparedStatement pstmt = null;
+		String query = "";
+		int numUpdates = 0;
+
+		try {
+			query = "UPDATE book SET userRating = ?, ratingCount = ? WHERE bookID = ?";
+
+			pstmt = conn.prepareStatement(query);
+
+			pstmt.setDouble(1, book.getUserRating());
+			pstmt.setInt(2, book.getRatingCount());
+			pstmt.setInt(3, book.getBookID());
+
+			numUpdates = pstmt.executeUpdate();
+
+			if (numUpdates > 0) {
+				System.out.println("Book rating for " + book.getName() + " updated.");
+				return true;
+			}
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		try {
+			pstmt.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		
+		return false;
+	}
+	
 }

@@ -73,9 +73,9 @@ public class ConsoleUserInterface {
 			System.out.println("\nPlease choose a menu option:");
 
 			System.out.println("\n1. View book list\n" + "2. Update progress\n" + "3. Add a book\n"
-					+ "4. Remove a book\n" + "5. View Recommendations\n" + "6. Logout");
+					+ "4. Remove a book\n" + "5. View Recommendations\n" + "6. Add Rating\n" + "7. Logout");
 
-			userInput = InputValidation.mainMenuValidation(scan, "^[123456]{1}$");
+			userInput = InputValidation.mainMenuValidation(scan, "^[1234567]{1}$");
 			System.out.println();
 			switch (userInput) {
 			case 1:
@@ -101,7 +101,13 @@ public class ConsoleUserInterface {
 				
 				viewRecs(scan);
 				break;
+				
 			case 6:
+				
+				addRating(scan);
+				break;
+				
+			case 7:
 				
 				String response = null;
 
@@ -173,6 +179,47 @@ public class ConsoleUserInterface {
 			mainMenu(scan);
 			break;
 		}
+
+	}
+	
+	public static void addRating(Scanner scan) throws SQLException {
+		TrackerDAO tDao = new TrackerDAO();
+		BookDAO bDao = new BookDAO();
+		double userRating;
+		String title = "Title", author = "Author", rating = "Critic Rating", genre = "Genre", status = "Status";
+
+		List<Tracker> trackers = new ArrayList<Tracker>();
+		trackers = tDao.findByUserId(id);
+		List<Book> books = new ArrayList<Book>();
+		books = bDao.findByName(trackers);
+
+		System.out.println("\nThese are the books currently being tracked: \n");
+
+		String str = String.format("%10s | %60s | %10s | %30s | %25s", title, author, rating, genre, status);
+		System.out.println(str);
+
+		for (int i = 0; i < books.size(); i++) {
+			System.out.println(books.get(i) + " | " + trackers.get(i).getProgressStatus());
+
+		}
+		
+		System.out.print("\nPlease enter a book name, if you'd like to: ");
+		scan.nextLine();
+		String bookName = scan.nextLine();
+		Book book = new Book();
+		
+		for (int i = 0; i < books.size(); i++) {
+			if ((books.get(i)).getName().equals(bookName)) {
+				book = books.get(i);
+			}
+		}
+		
+		System.out.println("\nPlease enter a book rating, if you'd like");
+		
+		userRating = scan.nextDouble();
+		System.out.println(userRating);
+		// remove from progress tracker
+		bDao.updateUserRating(book, userRating);
 
 	}
 
